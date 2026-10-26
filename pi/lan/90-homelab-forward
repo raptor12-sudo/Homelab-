@@ -1,0 +1,6 @@
+#!/bin/sh
+# Autorise le LAN homelab (eth0) à sortir par le Wi-Fi (wlan0) malgré la politique DROP de Docker.
+# À copier dans /etc/NetworkManager/dispatcher.d/ (mode 755).
+[ "$1" = eth0 ] && [ "$2" = up ] || exit 0
+iptables -C DOCKER-USER -i eth0 -o wlan0 -j ACCEPT 2>/dev/null || iptables -I DOCKER-USER -i eth0 -o wlan0 -j ACCEPT
+iptables -C DOCKER-USER -i wlan0 -o eth0 -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT 2>/dev/null || iptables -I DOCKER-USER -i wlan0 -o eth0 -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT

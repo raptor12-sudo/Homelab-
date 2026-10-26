@@ -7,7 +7,7 @@
 
 set -euo pipefail
 
-SRC="/opt/AdGuardHome/AdGuardHome.yaml"
+SRC="${ADGUARD_CONF:-$HOME/adguard/conf/AdGuardHome.yaml}"
 DST="$(dirname "$0")/AdGuardHome.yaml.sanitized"
 
 if [[ ! -r "$SRC" ]] && ! sudo test -r "$SRC"; then
