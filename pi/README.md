@@ -63,6 +63,15 @@ Le mode `shared` de NetworkManager attribue une IP fixe à `eth0`, lance un DHCP
 
 Retour arrière : `sudo nmcli connection delete homelab-lan`, puis supprimer les deux fichiers copiés.
 
+## 3. Mises à jour de sécurité automatiques
+
+```bash
+sudo apt-get install -y unattended-upgrades
+sudo dpkg-reconfigure -f noninteractive unattended-upgrades
+```
+
+Configuration par défaut : seuls les correctifs de sécurité Debian sont appliqués. Docker n'est pas mis à jour automatiquement, ce qui évite de redémarrer les conteneurs à l'improviste.
+
 ## Vérification
 
 Depuis un poste branché en câble sur le Pi :
