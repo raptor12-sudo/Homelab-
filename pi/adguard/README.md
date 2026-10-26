@@ -16,18 +16,24 @@ docker compose ps    # le conteneur adguardhome doit être « Up »
 Choix faits dans [`compose.yaml`](compose.yaml) :
 
 - **Ports liés à `192.168.1.81`** plutôt qu'à toutes les interfaces. Le Pi a une IPv6 publique : un DNS ouvert sur Internet serait exploité pour des attaques par amplification.
-- **L'assistant d'installation est sur le port 3001**, parce que le 3000 est pris par Grafana.
+- **Pas de port d'assistant d'installation** : il ne sert qu'une fois (voir « Premier démarrage »).
 - **L'interface web est sur le port 8080** : le port 80 de l'hôte reste libre pour un futur reverse proxy.
-- **Image `latest`** pour la première installation. À figer sur la version en service une fois validée.
+- **Version figée** (`v0.107.79`) : une mise à jour se fait volontairement, en changeant la version dans `compose.yaml` puis en lançant `docker compose up -d`.
 
 ## Premier démarrage
 
-1. Ouvrir `http://192.168.1.81:3001` depuis le réseau local.
+1. Pour une installation neuve uniquement, ajouter temporairement cette ligne sous `ports:` dans `compose.yaml`, puis lancer `docker compose up -d`. Le port 3001 est choisi parce que le 3000 est pris par Grafana.
+
+   ```yaml
+         - "192.168.1.81:3001:3000/tcp"
+   ```
+
+   Ouvrir ensuite `http://192.168.1.81:3001` depuis le réseau local.
 2. Dans l'assistant, garder le port **80** pour l'interface web et le port **53** pour le DNS. Ce sont les ports *dans* le conteneur : Docker les publie sur 8080 et 53.
 3. Créer le compte administrateur avec un mot de passe fort, stocké dans un gestionnaire de mots de passe.
 4. L'assistant se ferme ensuite : l'interface est sur `http://192.168.1.81:8080`.
 
-Le port 3001 ne répond plus après l'installation, c'est normal. On peut retirer sa ligne de `compose.yaml`.
+Retirer ensuite la ligne du port 3001 et relancer `docker compose up -d`.
 
 ## Vérification
 

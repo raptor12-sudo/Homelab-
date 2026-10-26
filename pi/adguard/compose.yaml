@@ -2,7 +2,7 @@
 # Ports publiés uniquement sur l'IP locale du Pi : le Pi a une IPv6 publique, AdGuard ne doit pas être joignable depuis Internet.
 services:
   adguardhome:
-    image: adguard/adguardhome:latest  # à figer sur la version en service
+    image: adguard/adguardhome:v0.107.79  # version figée : changer volontairement, après lecture des notes de version
     container_name: adguardhome
     restart: unless-stopped
     volumes:
@@ -11,5 +11,4 @@ services:
     ports:
       - "192.168.1.81:53:53/udp"
       - "192.168.1.81:53:53/tcp"
-      - "192.168.1.81:3001:3000/tcp"  # assistant de première installation (3000 pris par Grafana)
       - "192.168.1.81:8080:80/tcp"    # interface web après installation
