@@ -2,6 +2,12 @@
 
 Une entrée par étape ou incident. Plus récent en haut.
 
+## 2026-10-26 : vérification du CGNAT et accès à distance
+
+- L'IPv4 publique est partagée, et `192.0.0.1` apparaît juste après la box dans un `traceroute` : DS-Lite très probable chez Sonatel, donc pas de connexion entrante en IPv4. L'IPv6 publique native fonctionne. Reste à confirmer sur la page WAN de la box.
+- ADR 0003 mise à jour : il n'y a pas de VPS, contrairement à l'état initial du dépôt. WireGuard direct en IPv6 vers le Pi est proposé, sous réserve d'un test IPv6 en 4G. À défaut, il faudra louer un VPS pour servir de relais. Objectif : administrer le lab et garder le filtrage AdGuard sur l'iPhone et l'iPad hors de chez soi.
+- iPhone et iPad : DNS réglé manuellement sur AdGuard (`192.168.1.81`), sur le Wi-Fi de la box. Les publicités YouTube passent : un filtrage DNS ne peut pas les distinguer des vidéos, qui viennent des mêmes domaines. Pour YouTube, on utilise un navigateur bloqueur. L'interception TLS a été écartée (voir ADR 0003).
+
 ## 2026-10-26 : AdGuard Home et réseau homelab temporaire sur le Pi
 
 Contexte : le seul matériel disponible est le Raspberry Pi. Le HP EliteDesk recevra plus tard Proxmox, avec pfSense en VM. pfSense n'est donc **pas encore installé**, contrairement à ce qu'indiquait l'état initial.

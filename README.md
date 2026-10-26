@@ -6,7 +6,6 @@ Mon homelab, construit étape par étape, en partant de zéro. Je documente chaq
 
 Le lab est au tout début. Pour l'instant :
 
-- ✅ Un VPS Contabo sous Ubuntu 24.04, avec Traefik, Docker Compose et des certificats Let's Encrypt via DuckDNS.
 - ✅ Un Raspberry Pi 5 avec AdGuard Home (DNS filtrant), qui sert aussi de routeur temporaire au LAN homelab `10.0.10.0/24`. Voir [`pi/`](pi/README.md).
 - 🔲 Proxmox VE sur le HP EliteDesk 800 G3, à installer.
 - 🔲 pfSense, en VM sur Proxmox. Il remplacera le Pi comme routeur.
@@ -40,7 +39,7 @@ Détails, limites et retour arrière : [`pi/README.md`](pi/README.md). Historiqu
 
 ### Étape 4 : accès à distance
 
-*À faire : vérifier si la connexion est en CGNAT. Un `traceroute` montre `192.0.0.1` juste après la box, ce qui fait penser à du DS-Lite. Selon le résultat, WireGuard sur pfSense en direct, ou via le VPS.*
+*En cours : la connexion est très probablement en DS-Lite (CGNAT), donc sans IPv4 entrante. Piste retenue : WireGuard direct en IPv6 vers le Pi, sous réserve d'un test en 4G. Sinon, un VPS à louer servira de relais. Voir l'[ADR 0003](docs/decisions/0003-acces-distant.md).*
 
 ## Architecture (version actuelle)
 
