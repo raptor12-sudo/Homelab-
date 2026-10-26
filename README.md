@@ -39,7 +39,7 @@ Tutoriel pas à pas : [`docs/tutoriels/01-pi-adguard-reseau-homelab.md`](docs/tu
 
 ### Étape 4 : accès à distance
 
-*En cours : la connexion est très probablement en DS-Lite (CGNAT), donc sans IPv4 entrante. Piste retenue : WireGuard direct en IPv6 vers le Pi, sous réserve d'un test en 4G. Sinon, un VPS à louer servira de relais. Voir l'[ADR 0003](docs/decisions/0003-acces-distant.md).*
+*En cours : la connexion est très probablement en DS-Lite (CGNAT), donc sans IPv4 entrante. Piste retenue : WireGuard direct en IPv6 vers le Pi, sous réserve d'un test en 4G. Sinon, un VPS à louer servira de relais. Voir l'[ADR 0003](docs/decisions/0003-acces-distant.md). Procédure préparée, pas encore exécutée : [tutoriel 02](docs/tutoriels/02-wireguard-pi.md).*
 
 ## Architecture (version actuelle)
 
