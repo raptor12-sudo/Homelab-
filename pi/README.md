@@ -4,6 +4,8 @@ Le Raspberry Pi héberge AdGuard Home, le DNS filtrant du réseau. En attendant 
 
 **Statut** : en place et vérifié le 2026-10-26 (voir `docs/journal.md`).
 
+Version expliquée pas à pas : [tutoriel 01](../docs/tutoriels/01-pi-adguard-reseau-homelab.md).
+
 ## Matériel et contexte
 
 - Raspberry Pi 5, 8 Go de RAM, carte microSD 64 Go, Raspberry Pi OS (Bookworm, 64 bits).

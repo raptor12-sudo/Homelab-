@@ -35,7 +35,7 @@ Le Raspberry Pi 5 fait tourner **AdGuard Home** dans Docker. Il a été mis en p
 
 En attendant pfSense, le Pi crée aussi un **LAN homelab séparé** de la box (`10.0.10.0/24`, plan provisoire). Il fournit le DHCP et le NAT avec le mode `shared` de NetworkManager, et sort sur Internet par le Wi-Fi. Le Pi est partagé avec un autre projet (SaytuMbaye), ce qui explique certains choix de ports.
 
-Détails, limites et retour arrière : [`pi/README.md`](pi/README.md). Historique : [`docs/journal.md`](docs/journal.md).
+Tutoriel pas à pas : [`docs/tutoriels/01-pi-adguard-reseau-homelab.md`](docs/tutoriels/01-pi-adguard-reseau-homelab.md). Fiche technique : [`pi/README.md`](pi/README.md). Historique : [`docs/journal.md`](docs/journal.md).
 
 ### Étape 4 : accès à distance
 
@@ -80,7 +80,7 @@ Chacun de ces points sera ajouté comme une étape, une fois le précédent fonc
 Homelab-/
 ├── README.md
 ├── LICENSE
-├── docs/      # Journal, décisions (ADR) et runbooks
+├── docs/      # Journal, décisions (ADR), tutoriels et runbooks
 ├── pi/        # Raspberry Pi : AdGuard Home et LAN temporaire
 ├── network/   # Plan d'adressage et règles de pare-feu
 ├── services/  # Services à venir
