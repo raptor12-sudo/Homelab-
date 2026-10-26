@@ -1,4 +1,4 @@
-# RasNetLab
+# HOMELAB
 
 Mon homelab, construit étape par étape, en partant de zéro. Je documente chaque étape au fur et à mesure, pour apprendre et pour garder une trace de ce qui marche.
 
