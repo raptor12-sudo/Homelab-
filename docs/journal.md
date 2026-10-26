@@ -2,6 +2,14 @@
 
 Une entrée par étape ou incident. Plus récent en haut.
 
+## 2026-10-26 : WireGuard sur le Pi
+
+- `wireguard-tools` et `qrencode` installés. Serveur `wg0` en `10.0.20.1/24`, port UDP `51820`, démarré après Docker (drop-in `apres-docker.conf`). Règles `DOCKER-USER` ajoutées en `PostUp`.
+- Clés générées sur le Pi, lisibles par root seulement. Trois pairs déclarés : iPhone `.2`, iPad `.3`, Mac `.4`.
+- iPhone configuré par QR code, en tunnel partiel, avec AdGuard comme DNS. Vérifié à la maison : poignée de main établie, et requêtes DNS visibles dans AdGuard avec le client `10.0.20.2`.
+- Incidents : le QR code ne tenait pas dans le panneau tmux, d'où le passage par une image PNG copiée sur le Mac puis effacée. Le premier import n'avait donné aucune poignée de main, un nouveau QR code a réglé le problème.
+- Pas encore fait : l'iPad, le Mac, l'accès depuis l'extérieur (ADR 0003) et un test de redémarrage du Pi.
+
 ## 2026-10-26 : vérification du CGNAT et accès à distance
 
 - L'IPv4 publique est partagée, et `192.0.0.1` apparaît juste après la box dans un `traceroute` : DS-Lite très probable chez Sonatel, donc pas de connexion entrante en IPv4. L'IPv6 publique native fonctionne. Reste à confirmer sur la page WAN de la box.

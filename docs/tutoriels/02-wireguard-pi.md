@@ -1,6 +1,6 @@
 # Tutoriel 02 : WireGuard sur le Raspberry Pi
 
-> **Statut : procédure préparée, pas encore exécutée.** Contrairement au [tutoriel 01](01-pi-adguard-reseau-homelab.md), rien de ce qui suit n'a encore été installé ni testé sur le Pi. Les valeurs marquées *(proposition)* restent à valider. Ce tutoriel sera corrigé avec les résultats réels au moment de l'installation.
+> **Statut (2026-10-26)** : étapes 3 à 8 **exécutées et vérifiées** sur le Pi avec l'iPhone, à la maison : poignée de main établie, et requêtes DNS visibles dans AdGuard avec le client `10.0.20.2`. L'iPad et le Mac sont déclarés sur le serveur, mais pas encore configurés. L'accès depuis l'extérieur ([étape 9](#9-rendre-le-pi-joignable-depuis-lextérieur)) n'est **pas** encore en place.
 
 **À la fin, tu auras :**
 
@@ -56,9 +56,9 @@ WireGuard crée un **réseau privé virtuel**. Chaque appareil reçoit une adres
 
 | Valeur | Proposition | Pourquoi |
 |---|---|---|
-| Sous-réseau du tunnel | `10.0.20.0/24` *(proposition)* | Ne chevauche ni la box (`192.168.1.x`) ni le LAN homelab (`10.0.10.x`) |
+| Sous-réseau du tunnel | `10.0.20.0/24` | Ne chevauche ni la box (`192.168.1.x`) ni le LAN homelab (`10.0.10.x`) |
 | Adresse du Pi dans le tunnel | `10.0.20.1` | |
-| Port UDP | `51820` *(proposition)* | Le port par défaut de WireGuard |
+| Port UDP | `51820` | Le port par défaut de WireGuard |
 | iPhone / iPad / Mac | `10.0.20.2` / `.3` / `.4` | Une adresse fixe par appareil |
 | DNS des clients | `192.168.1.81` | L'adresse où AdGuard écoute déjà : rien à changer dans `compose.yaml` |
 
@@ -221,6 +221,18 @@ EOF
 
 1. Installe l'application **WireGuard**, l'officielle, sur l'App Store.
 2. Sur le Pi : `qrencode -t ansiutf8 < iphone.conf`. Un QR code s'affiche dans le terminal.
+
+   **Si le QR code ne tient pas dans le terminal** (ce qui nous est arrivé avec un panneau tmux trop petit), le générer en image et l'ouvrir sur l'ordinateur :
+
+   ```bash
+   # sur le Pi
+   sudo qrencode -t PNG -s 8 -o /tmp/wg-iphone.png -r /etc/wireguard/iphone.conf
+   sudo chown <utilisateur> /tmp/wg-iphone.png
+   # sur l'ordinateur, dans un terminal LOCAL (pas la session SSH du Pi)
+   scp <utilisateur>@192.168.1.81:/tmp/wg-iphone.png ~/Desktop/ && open ~/Desktop/wg-iphone.png
+   ```
+
+   Après le scan, **effacer l'image des deux côtés**, puisqu'elle contient la clé privée : `rm ~/Desktop/wg-iphone.png` sur l'ordinateur, `sudo rm /tmp/wg-iphone.png` sur le Pi.
 3. Dans l'application : **+ → Créer à partir d'un code QR**, puis scanne et donne un nom (ex. « homelab »).
 4. Supprime le fichier, qui contient la clé privée : `rm iphone.conf iphone.key`, puis `exit`.
 
@@ -245,6 +257,8 @@ L'iPhone est sur le Wi-Fi de la maison, avec le tunnel activé à la main.
 | Ouvrir `http://192.168.1.81:8080` | iPhone | L'interface d'AdGuard s'affiche |
 | Journal des requêtes d'AdGuard | AdGuard | Les requêtes de l'iPhone apparaissent |
 | Ping de `10.0.20.2` | Pi | L'iPhone répond. iOS peut ignorer les pings : ce n'est pas bloquant |
+
+**Résultat obtenu** : `latest handshake` établi pour l'iPhone, 628 octets reçus et 716 envoyés, et les requêtes de l'iPhone apparaissent dans le journal d'AdGuard avec le client **`10.0.20.2`**. C'est la preuve que le DNS passe bien par le tunnel. ✅
 
 > Ce test prouve que le serveur, les clés, le DNS et le pare-feu fonctionnent. Il **ne prouve pas** l'accès depuis l'extérieur : c'est l'étape suivante.
 
@@ -284,7 +298,8 @@ sudo systemctl reload wg-quick@wg0
 | Symptôme | Piste |
 |---|---|
 | `wg-quick@wg0` ne démarre pas | `journalctl -u wg-quick@wg0 -n 30`. Souvent une clé mal copiée, ou `DOCKER-USER` qui n'existe pas encore (vérifier le `After=docker.service`) |
-| Pas de `latest handshake` | Le client ne joint pas le Pi : `Endpoint` faux, port bloqué, ou clés inversées (la clé **publique** du serveur va chez le client, et inversement) |
+| Pas de `latest handshake` | Le client ne joint pas le Pi : `Endpoint` faux, port bloqué, ou clés inversées (la clé **publique** du serveur va chez le client, et inversement). **Vécu** : le premier import par QR code n'avait rien donné. Supprimer le tunnel dans l'application et re-scanner un QR code régénéré a suffi |
+| Pour voir si les paquets arrivent au Pi | `sudo apt-get install -y tcpdump`, puis `sudo tcpdump -ni wlan0 udp port 51820` pendant qu'on active le tunnel |
 | Handshake OK, mais pas de DNS | `DNS = 192.168.1.81` absent du client, ou `192.168.1.81/32` absent de ses `AllowedIPs` |
 | Handshake OK, mais le LAN homelab est injoignable | Règles `PostUp` absentes : `sudo iptables -S DOCKER-USER` doit montrer les lignes `wg0` |
 | Internet coupé sur l'iPhone dès que le tunnel est actif | Le tunnel est actif mais le Pi est injoignable, donc plus de DNS. Désactiver le tunnel, puis corriger l'`Endpoint` |
@@ -304,9 +319,11 @@ Puis supprimer le tunnel dans l'application WireGuard de chaque appareil.
 
 ---
 
-## À faire au moment de l'installation réelle
+## Suivi
 
-- [ ] Valider les valeurs marquées *(proposition)* et les reporter dans `network/addressing.md`.
-- [ ] Exécuter les étapes 3 à 8, puis corriger ce tutoriel avec les résultats réels.
-- [ ] Retirer l'avertissement « procédure préparée » en haut de page.
-- [ ] Choisir la voie de l'étape 9.
+- [x] Valider les valeurs : tunnel `10.0.20.0/24`, port `51820`.
+- [x] Exécuter les étapes 3 à 8 avec l'iPhone.
+- [ ] Reporter le sous-réseau du tunnel dans `network/addressing.md`.
+- [ ] Configurer l'iPad et le Mac (étape 7).
+- [ ] Choisir la voie de l'étape 9 (accès depuis l'extérieur).
+- [ ] Tester un redémarrage du Pi : `wg0` doit remonter après Docker.
