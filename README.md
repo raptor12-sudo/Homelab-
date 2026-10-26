@@ -6,10 +6,10 @@ Mon homelab, construit étape par étape, en partant de zéro. Je documente chaq
 
 Le lab est au tout début. Pour l'instant :
 
-- ✅ Un Raspberry Pi 5 avec AdGuard Home (DNS filtrant), qui sert aussi de routeur temporaire au LAN homelab `10.0.10.0/24`. Voir [`pi/`](pi/README.md).
-- 🔲 Proxmox VE sur le HP EliteDesk 800 G3, à installer.
-- 🔲 pfSense, en VM sur Proxmox. Il remplacera le Pi comme routeur.
-- 🔲 Un switch manageable, pour les VLANs.
+ Un Raspberry Pi 5 avec AdGuard Home (DNS filtrant), qui sert aussi de routeur temporaire au LAN homelab `10.0.10.0/24`. Voir [`pi/`](pi/README.md).
+ Proxmox VE sur le HP EliteDesk 800 G3, à installer.
+ pfSense, en VM sur Proxmox. Il remplacera le Pi comme routeur.
+ Un switch manageable, pour les VLANs.
 
 ## Objectif
 
