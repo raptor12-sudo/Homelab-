@@ -1,0 +1,15 @@
+# AdGuard Home : DNS filtrant du homelab, déployé dans ~/adguard sur le Pi.
+# Ports publiés uniquement sur l'IP locale du Pi : le Pi a une IPv6 publique, AdGuard ne doit pas être joignable depuis Internet.
+services:
+  adguardhome:
+    image: adguard/adguardhome:latest  # à figer sur la version en service
+    container_name: adguardhome
+    restart: unless-stopped
+    volumes:
+      - ./work:/opt/adguardhome/work
+      - ./conf:/opt/adguardhome/conf
+    ports:
+      - "192.168.1.81:53:53/udp"
+      - "192.168.1.81:53:53/tcp"
+      - "192.168.1.81:3001:3000/tcp"  # assistant de première installation (3000 pris par Grafana)
+      - "192.168.1.81:8080:80/tcp"    # interface web après installation
