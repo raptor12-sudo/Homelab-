@@ -42,7 +42,7 @@ Concevoir, déployer et exploiter une infrastructure réseau et de services comp
 | Stockage système | SSD 256 Go ou 512 Go | À ajouter |
 | Stockage données | Disque 500 Go | Type à confirmer (SSD ou mécanique) |
 | Sauvegardes | HDD 1 To | Connexion USB |
-<img width="577" height="445" alt="image" src="https://github.com/user-attachments/assets/f702fe9f-96af-470f-ac8d-c1443851e86d" />
+
 
 
 ### Ports et connectiques
@@ -61,6 +61,7 @@ Concevoir, déployer et exploiter une infrastructure réseau et de services comp
 - Le port natif et l'adaptateur USB doivent être reconnus séparément par OPNsense avant toute configuration.
 - Le disque mécanique de 500 Go ne doit porter ni le système ni de service actif.
 - Le port console sert à l'installation ; le reste de l'administration se fait à distance, par le réseau.
+<img width="1600" height="1600" alt="image" src="https://github.com/user-attachments/assets/2d4ce540-974a-48a6-8aed-7467b373e869" />
 
 ## Feuille de route
 
