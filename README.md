@@ -6,23 +6,23 @@ Un homelab local, orienté security-first : fondations réseau, identité et sec
 
 | Domaine | Choix | Statut |
 |---|---|---|
-| Matériel serveur | Mini-PC AMD PRO A10, 8 Go (16 Go prévus) | À acquérir |
-| Pare-feu et routeur | OPNsense | À faire |
-| Accès distant | WireGuard | À faire |
-| Identité | authentik | À faire |
-| Secrets | OpenBao | À faire |
-| Automatisation | Ansible, Terraform | À venir |
-| Cluster applicatif | K3s ou Talos, ArgoCD | À venir |
+| Matériel serveur | Mini-PC AMD PRO A10, 8 Go (16 Go prévus) | 
+| Pare-feu et routeur | OPNsense |
+| Accès distant | WireGuard |
+| Identité | authentik | 
+| Secrets | OpenBao | 
+| Automatisation | Ansible, Terraform |
+| Cluster applicatif | K3s ou Talos, ArgoCD |
 
 ## Étapes
 
 | # | Étape | Guide |
 |---|---|---|
-| 1 | Choisir le matériel | [Bien choisir son matériel](https://www.stephane-robert.info/docs/homelab/materiel/) |
-| 2 | Poser les fondations réseau | [OPNsense + Tailscale](https://www.stephane-robert.info/docs/homelab/opnsense-tailscale/) |
-| 3 | Déployer le nœud d'administration | [Premier nœud Proxmox admin](https://www.stephane-robert.info/docs/homelab/noeud-admin-proxmox/) |
-| 4 | Industrialiser avec l'IaC | Guide en préparation |
-| 5 | Déployer le cluster applicatif | [GitOps](https://www.stephane-robert.info/docs/devops/delivery/gitops/) |
+| 1 | Choisir le matériel |
+| 2 | Poser les fondations réseau |
+| 3 | Déployer le nœud d'administration |
+| 4 | Industrialiser avec l'IaC | 
+| 5 | Déployer le cluster applicatif |
 
 ## Paramètres à renseigner
 
