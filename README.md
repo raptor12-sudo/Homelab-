@@ -7,7 +7,7 @@ Mon homelab, construit étape par étape, en partant de zéro. Je documente chaq
 Le lab est au tout début. Pour l'instant :
 
  Un Raspberry Pi 5 avec AdGuard Home (DNS filtrant), qui sert aussi de routeur temporaire au LAN homelab `10.0.10.0/24`. Voir [`pi/`](pi/README.md).
- Proxmox VE sur le HP EliteDesk 800 G3, à installer.
+ Proxmox VE sur le mini PC AMD PRO A10 (8 Go de RAM, disque 500 Go), à acquérir puis installer.
  pfSense, en VM sur Proxmox. Il remplacera le Pi comme routeur.
  Un switch manageable, pour les VLANs.
 
@@ -25,7 +25,7 @@ J'ai choisi **Proxmox VE** plutôt que Debian avec Docker, pour pouvoir séparer
 
 ### Étape 2 : le serveur
 
-Un HP EliteDesk 800 G3 (Core i5 de 7e génération, SSD 256 Go). Il a 8 Go de RAM, ce qui suffit pour démarrer avec Proxmox et pfSense. Il faudra passer à 16 Go pour les services. pfSense y tournera en VM, avec un second port réseau (adaptateur USB ou carte PCIe) pour séparer le WAN du LAN.
+Un mini PC AMD PRO A10 d'occasion (3,0 GHz, 4 cœurs, 8 Go de RAM, disque 500 Go), choisi pour son prix. Il remplace le HP EliteDesk 800 G3 initialement envisagé (voir [ADR 0004](docs/decisions/0004-serveur-amd-a10.md)). Plan : passer la RAM à 16 Go, ajouter un SSD de 256 ou 512 Go pour Proxmox, et réserver le disque de 500 Go aux données. pfSense y tournera en VM, avec un second port réseau (adaptateur USB Gigabit) pour séparer le WAN du LAN.
 
 *À compléter après l'installation.*
 
@@ -58,7 +58,7 @@ Cible :
 ```
 Internet
    │
-  Box ── HP EliteDesk (Proxmox, pfSense en VM) ── switch manageable
+  Box ── Mini PC A10 (Proxmox, pfSense en VM) ── switch manageable
                                                       │
                                          Raspberry Pi (DNS), serveurs, postes
 ```

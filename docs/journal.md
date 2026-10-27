@@ -2,6 +2,11 @@
 
 Une entrée par étape ou incident. Plus récent en haut.
 
+## 2026-10-27 : serveur remplacé par un mini PC AMD PRO A10
+
+- Choix du mini PC AMD PRO A10 pour le serveur Proxmox, en remplacement du HP EliteDesk 800 G3, pour des raisons de budget (ADR 0004). pfSense en VM aura besoin d'un adaptateur USB Gigabit pour le second port.
+- À faire avant l'installation : activer SVM dans le BIOS, passer la RAM à 16 Go, ajouter un SSD pour Proxmox.
+
 ## 2026-10-26 : WireGuard sur le Pi
 
 - `wireguard-tools` et `qrencode` installés. Serveur `wg0` en `10.0.20.1/24`, port UDP `51820`, démarré après Docker (drop-in `apres-docker.conf`). Règles `DOCKER-USER` ajoutées en `PostUp`.
