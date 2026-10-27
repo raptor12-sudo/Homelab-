@@ -1,6 +1,16 @@
 # HOMELAB
 
-Mon homelab, construit étape par étape, en partant de zéro. Je documente chaque étape au fur et à mesure, pour apprendre et pour garder une trace de ce qui marche.
+Un homelab moderne, réaliste et orienté **security-first**. On pose d'abord les fondations réseau, identité et secrets, avant de déployer les premiers workloads. Chaque étape renvoie vers un guide détaillé, pour avancer sans se disperser.
+
+## Plan de travail
+
+1. **Fondations réseau** : segmentation (VLAN), DNS interne, plan d'adressage, pare-feu en refus par défaut.
+2. **Accès sécurisé** : accès distant par VPN (WireGuard), sans port exposé directement sur Internet.
+3. **Identité et secrets** : gestion centralisée des accès et des secrets, avant tout service qui en contient.
+4. **Premiers workloads** : sauvegardes, reverse proxy HTTPS, gestionnaire de mots de passe, supervision.
+5. **Observabilité et détection** : métriques, journaux, détection d'intrusion.
+
+Contraintes : la stack d'identité demande davantage de mémoire. Le passage à 16 Go de RAM sur le serveur est donc un préalable à l'étape 3. Le choix du système d'exploitation du serveur (Proxmox ou autre) reste à trancher avant l'étape 1.
 
 ## Où on en est
 

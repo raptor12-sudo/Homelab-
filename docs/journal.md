@@ -2,6 +2,11 @@
 
 Une entrée par étape ou incident. Plus récent en haut.
 
+## 2026-10-27 : plan de travail security-first
+
+- Adoption d'un plan en cinq étapes : fondations réseau, accès sécurisé, identité et secrets, premiers workloads, observabilité. Les étapes sont détaillées dans le README.
+- Le choix du système d'exploitation du serveur reste ouvert.
+
 ## 2026-10-27 : serveur remplacé par un mini PC AMD PRO A10
 
 - Choix du mini PC AMD PRO A10 pour le serveur Proxmox, en remplacement du HP EliteDesk 800 G3, pour des raisons de budget (ADR 0004). pfSense en VM aura besoin d'un adaptateur USB Gigabit pour le second port.
