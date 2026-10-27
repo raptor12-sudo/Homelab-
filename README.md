@@ -4,9 +4,9 @@ Un homelab local, orienté security-first : fondations réseau, identité et sec
 
 ## Stack
 
-| Domaine | Choix | Statut |
+| Domaine | Choix | 
 |---|---|---|
-| Matériel serveur | Mini-PC AMD PRO A10, 8 Go (16 Go prévus) | 
+| Matériel serveur | Mini-PC AMD PRO A10, 8 Go (16 Go prévus)et un pi5 comme routeur  | 
 | Pare-feu et routeur | OPNsense |
 | Accès distant | WireGuard |
 | Identité | authentik | 
@@ -16,7 +16,7 @@ Un homelab local, orienté security-first : fondations réseau, identité et sec
 
 ## Étapes
 
-| # | Étape | Guide |
+| # | Étape | 
 |---|---|---|
 | 1 | Choisir le matériel |
 | 2 | Poser les fondations réseau |
