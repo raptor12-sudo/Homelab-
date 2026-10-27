@@ -4,7 +4,7 @@ Un homelab moderne, réaliste et orienté **security-first**. On pose d'abord le
 
 ## Plan de travail
 
-1. **Fondations réseau** : segmentation (VLAN), DNS interne, plan d'adressage, pare-feu en refus par défaut.
+1. **Fondations réseau** : pare-feu **OPNsense** (ADR 0005), segmentation (VLAN), DNS interne, plan d'adressage, refus par défaut, détection d'intrusion avec Suricata.
 2. **Accès sécurisé** : accès distant par VPN (WireGuard), sans port exposé directement sur Internet.
 3. **Identité et secrets** : gestion centralisée des accès et des secrets, avant tout service qui en contient.
 4. **Premiers workloads** : sauvegardes, reverse proxy HTTPS, gestionnaire de mots de passe, supervision.
@@ -18,7 +18,7 @@ Le lab est au tout début. Pour l'instant :
 
  Un Raspberry Pi 5 avec AdGuard Home (DNS filtrant), qui sert aussi de routeur temporaire au LAN homelab `10.0.10.0/24`. Voir [`pi/`](pi/README.md).
  Proxmox VE sur le mini PC AMD PRO A10 (8 Go de RAM, disque 500 Go), à acquérir puis installer.
- pfSense, en VM sur Proxmox. Il remplacera le Pi comme routeur.
+ OPNsense, pare-feu et routeur du lab (ADR 0005). Il remplacera le Pi comme routeur.
  Un switch manageable, pour les VLANs.
 
 ## Objectif

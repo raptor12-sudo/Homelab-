@@ -2,6 +2,11 @@
 
 Une entrée par étape ou incident. Plus récent en haut.
 
+## 2026-10-27 : OPNsense retenu comme pare-feu
+
+- Choix d'OPNsense à la place de pfSense, pour l'intégration de Suricata et de WireGuard, et pour suivre le guide de référence (ADR 0005).
+- Restent ouverts : le système d'exploitation du serveur (OPNsense directement sur le mini PC, ou VM), le modèle d'adaptateur USB Gigabit, et le rôle DNS entre OPNsense et AdGuard.
+
 ## 2026-10-27 : plan de travail security-first
 
 - Adoption d'un plan en cinq étapes : fondations réseau, accès sécurisé, identité et secrets, premiers workloads, observabilité. Les étapes sont détaillées dans le README.
