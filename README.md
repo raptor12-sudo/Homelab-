@@ -1,47 +1,61 @@
 # Homelab
 
-Un homelab local, orienté security-first : fondations réseau, identité et secrets, puis les workloads. Chaque étape renvoie vers un guide détaillé.
+Infrastructure locale de test et d'apprentissage, conçue selon une approche security-first. Le déploiement suit un ordre strict : réseau, identité et secrets, puis charges applicatives.
 
-## Stack
+## Objectif
 
-| Domaine | Choix | 
-|---|---|
-| Matériel serveur | Mini-PC AMD PRO A10, 8 Go (16 Go prévus)et un pi5 comme routeur  | 
-| Pare-feu et routeur | OPNsense |
-| Accès distant | WireGuard |
-| Identité | authentik | 
-| Secrets | OpenBao | 
-| Automatisation | Ansible, Terraform |
-| Cluster applicatif | K3s ou Talos, ArgoCD |
+Concevoir, déployer et exploiter une infrastructure réseau et de services complète, avec les contraintes suivantes :
 
-## Étapes
+- Hébergement exclusivement local pour les données et les services internes.
+- Accès distant par VPN, sans port de service exposé sur Internet.
+- Séparation des rôles : routage et filtrage, administration, services applicatifs.
+- Reproductibilité : chaque composant est documenté et réinstallable.
 
-| # | Étape | 
-|---|---|
-| 1 | Choisir le matériel |
-| 2 | Poser les fondations réseau |
-| 3 | Déployer le nœud d'administration |
-| 4 | Industrialiser avec l'IaC | 
-| 5 | Déployer le cluster applicatif |
+## Architecture
 
-## Paramètres à renseigner
-
-| Élément | Valeur | Remarque |
+| Couche | Composant | Rôle |
 |---|---|---|
-| Plan d'adressage | À définir | Pas de valeur tant que les VLAN ne sont pas décidés |
-| Système du serveur | À décider | Proxmox ou OPNsense directement |
-| Accès distant | À confirmer | Vérifier le CGNAT avant tout |
+| Réseau | OPNsense | Routage, pare-feu, VLAN, détection d'intrusion (Suricata) |
+| Accès distant | WireGuard | Tunnel VPN vers le réseau interne |
+| Identité | authentik | Authentification centralisée, SSO OIDC |
+| Secrets | OpenBao | Stockage et émission de secrets, PKI interne |
+| Charges | Conteneurs ou VM | Services applicatifs, isolés par rôle |
 
-Aucun mot de passe, clé privée ni secret n'est versionné dans ce dépôt.
+## Ressources
 
-## Documentation
+| Élément | Spécification | État |
+|---|---|---|
+| Serveur | Mini-PC AMD PRO A10, 4 cœurs, 8 Go de RAM, disque 500 Go | À acquérir |
+| Mémoire cible | 16 Go | Prérequis de la couche identité |
+| Pare-feu | Deux interfaces réseau (port natif et adaptateur USB Gigabit) | À valider (compatibilité) |
+| Stockage | SSD 256 Go, disque 500 Go, HDD 1 To | Disponible |
 
-Le guide de référence : [stephane-robert.info, homelab](https://www.stephane-robert.info/docs/homelab/roadmap/).
+## Feuille de route
+
+| Phase | Périmètre | Dépendances |
+|---|---|---|
+| 1. Matériel | Serveur, stockage, équipement réseau | Aucune |
+| 2. Fondations réseau | OPNsense, VLAN, adressage, accès distant | Phase 1 |
+| 3. Nœud d'administration | authentik, OpenBao | Phase 2, 16 Go de RAM |
+| 4. Industrialisation | Ansible, Terraform, templates | Phase 3 |
+| 5. Cluster applicatif | Kubernetes (K3s ou Talos), GitOps | Phases 3 et 4 |
+
+## Points ouverts
+
+- **Système du serveur** : Proxmox (VM OPNsense et nœud d'administration) ou OPNsense installé directement.
+- **Plan d'adressage** : à définir avec la segmentation VLAN.
+- **Accès distant** : la présence d'un CGNAT conditionne le choix entre accès direct et relais.
+
+## Sécurité
+
+- Aucun secret, mot de passe ni clé privée n'est versionné.
+- Tout script est relu avant exécution.
+- Le pare-feu applique un refus par défaut ; chaque flux autorisé est documenté.
 
 ## Licence
 
 Voir [LICENSE](LICENSE).
 
-## Inspirations
+## Références
 
-- [Guide homelab de stephane-robert.info](https://www.stephane-robert.info/docs/homelab/)
+Guide [stephane-robert.info, homelab](https://www.stephane-robert.info/docs/homelab/), pour l'ordre des phases et les outils retenus.
