@@ -1,53 +1,47 @@
-# HOMELAB
+# Homelab
 
-Un homelab moderne, réaliste et orienté **security-first**. On pose d'abord les fondations réseau, identité et secrets, avant de déployer les premiers workloads. Chaque étape renvoie vers un guide détaillé, pour avancer sans se disperser.
+Un homelab local, orienté security-first : fondations réseau, identité et secrets, puis les workloads. Chaque étape renvoie vers un guide détaillé.
 
-Guide de référence : [stephane-robert.info, homelab](https://www.stephane-robert.info/docs/homelab/roadmap/)
+## Stack
 
-## Feuille de route
+| Domaine | Choix | Statut |
+|---|---|---|
+| Matériel serveur | Mini-PC AMD PRO A10, 8 Go (16 Go prévus) | À acquérir |
+| Pare-feu et routeur | OPNsense | À faire |
+| Accès distant | WireGuard | À faire |
+| Identité | authentik | À faire |
+| Secrets | OpenBao | À faire |
+| Automatisation | Ansible, Terraform | À venir |
+| Cluster applicatif | K3s ou Talos, ArgoCD | À venir |
 
-### 1. Choisir le matériel
+## Étapes
 
-Mini-PC, switch manageable, stockage. Budget : 500 à 1000 € pour un setup complet dans le guide ; ici, budget réduit.
+| # | Étape | Guide |
+|---|---|---|
+| 1 | Choisir le matériel | [Bien choisir son matériel](https://www.stephane-robert.info/docs/homelab/materiel/) |
+| 2 | Poser les fondations réseau | [OPNsense + Tailscale](https://www.stephane-robert.info/docs/homelab/opnsense-tailscale/) |
+| 3 | Déployer le nœud d'administration | [Premier nœud Proxmox admin](https://www.stephane-robert.info/docs/homelab/noeud-admin-proxmox/) |
+| 4 | Industrialiser avec l'IaC | Guide en préparation |
+| 5 | Déployer le cluster applicatif | [GitOps](https://www.stephane-robert.info/docs/devops/delivery/gitops/) |
 
-- Serveur : mini PC AMD PRO A10 d'occasion, 8 Go de RAM, disque 500 Go. Passage à 16 Go prévu.
-- Stockage : SSD 256 Go, disque 500 Go, HDD 1 To.
-- Switch manageable : à acheter plus tard.
+## Paramètres à renseigner
 
-→ [Bien choisir son matériel](https://www.stephane-robert.info/docs/homelab/materiel/)
+| Élément | Valeur | Remarque |
+|---|---|---|
+| Plan d'adressage | À définir | Pas de valeur tant que les VLAN ne sont pas décidés |
+| Système du serveur | À décider | Proxmox ou OPNsense directement |
+| Accès distant | À confirmer | Vérifier le CGNAT avant tout |
 
-### 2. Poser les fondations réseau
+Aucun mot de passe, clé privée ni secret n'est versionné dans ce dépôt.
 
-Pare-feu OPNsense comme routeur, VLAN et plan d'adressage. Accès distant par WireGuard, à la place de Tailscale, pour rester indépendant d'un service tiers.
+## Documentation
 
-- Statut : à faire.
-
-→ [OPNsense + Tailscale](https://www.stephane-robert.info/docs/homelab/opnsense-tailscale/)
-
-### 3. Déployer le nœud admin
-
-Premier nœud avec les services de confiance : authentik (identité, SSO) et OpenBao (secrets). Ce nœud doit rester séparé des services applicatifs.
-
-- Statut : à faire. Prérequis : 16 Go de RAM.
-
-→ [Premier nœud Proxmox admin](https://www.stephane-robert.info/docs/homelab/noeud-admin-proxmox/)
-
-### 4. Industrialiser avec l'IaC
-
-Templates Proxmox, golden images, Ansible pour la configuration, Terraform pour le provisioning.
-
-- Statut : à venir.
-
-→ Guide en préparation
-
-### 5. Déployer le cluster applicatif
-
-Kubernetes (K3s ou Talos), observabilité, GitOps avec ArgoCD.
-
-- Statut : à venir.
-
-→ [GitOps](https://www.stephane-robert.info/docs/devops/delivery/gitops/)
+Le guide de référence : [stephane-robert.info, homelab](https://www.stephane-robert.info/docs/homelab/roadmap/).
 
 ## Licence
 
 Voir [LICENSE](LICENSE).
+
+## Inspirations
+
+- [Guide homelab de stephane-robert.info](https://www.stephane-robert.info/docs/homelab/)
