@@ -61,7 +61,8 @@ Concevoir, déployer et exploiter une infrastructure réseau et de services comp
 - Le port natif et l'adaptateur USB doivent être reconnus séparément par OPNsense avant toute configuration.
 - Le disque mécanique de 500 Go ne doit porter ni le système ni de service actif.
 - Le port console sert à l'installation ; le reste de l'administration se fait à distance, par le réseau.
-<img width="1600" height="1600" alt="image" src="https://github.com/user-attachments/assets/2d4ce540-974a-48a6-8aed-7467b373e869" />
+  <img width="700" height="700" alt="image" src="https://github.com/user-attachments/assets/23d2baa9-c0c1-439c-82fc-b700809cd959" />
+
 
 ## Feuille de route
 
