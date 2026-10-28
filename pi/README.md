@@ -15,7 +15,7 @@ Le Raspberry Pi assure le DNS filtrant (AdGuard Home) et sert de routeur au rés
 | Clé Wi-Fi USB (`wlan1`) | Realtek RTL8188EUS, sortie Internet (client) |
 | Ethernet (`eth0`) | LAN homelab en câble |
 
-Le Pi est partagé avec un autre projet (SaytuMbaye : InfluxDB, Grafana, MQTT, dans Docker). Ses ports sont réservés, en particulier le 3000 pris par Grafana.
+
 
 ## Architecture
 
