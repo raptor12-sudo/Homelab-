@@ -1,8 +1,24 @@
 #!/bin/sh
-# Autorise les LAN homelab (eth0 en câble, wlan0 en point d'accès) à sortir par la clé Wi-Fi USB (wlan1) malgré la politique DROP de Docker.
-# À copier dans /etc/NetworkManager/dispatcher.d/ (mode 755).
-UPLINK=wlan1
-case "$1" in eth0|wlan0) ;; *) exit 0 ;; esac
+# Autorise les LAN homelab (câble + point d'accès Wi-Fi) à sortir par l'uplink, malgré la
+# politique FORWARD=DROP de Docker. À copier dans /etc/NetworkManager/dispatcher.d/ (mode 755).
+#
+# Indépendant des noms d'interface : l'uplink est l'interface qui porte la route par défaut,
+# et on agit pour eth0 (LAN câble) et pour toute interface en mode point d'accès (AP).
+# Les noms peuvent permuter selon le pilote Wi-Fi : on ne les code donc jamais en dur.
+IFACE="$1"
 [ "$2" = up ] || exit 0
-iptables -C DOCKER-USER -i "$1" -o $UPLINK -j ACCEPT 2>/dev/null || iptables -I DOCKER-USER -i "$1" -o $UPLINK -j ACCEPT
-iptables -C DOCKER-USER -i $UPLINK -o "$1" -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT 2>/dev/null || iptables -I DOCKER-USER -i $UPLINK -o "$1" -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
+
+# Est-ce une interface LAN du homelab ? (câble, ou Wi-Fi en mode AP)
+is_lan=0
+[ "$IFACE" = eth0 ] && is_lan=1
+iw dev "$IFACE" info 2>/dev/null | grep -q "type AP" && is_lan=1
+[ "$is_lan" = 1 ] || exit 0
+
+# L'uplink = l'interface de la route par défaut
+UPLINK=$(ip route show default | awk '{print $5; exit}')
+[ -n "$UPLINK" ] && [ "$UPLINK" != "$IFACE" ] || exit 0
+
+iptables -C DOCKER-USER -i "$IFACE" -o "$UPLINK" -j ACCEPT 2>/dev/null \
+  || iptables -I DOCKER-USER -i "$IFACE" -o "$UPLINK" -j ACCEPT
+iptables -C DOCKER-USER -i "$UPLINK" -o "$IFACE" -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT 2>/dev/null \
+  || iptables -I DOCKER-USER -i "$UPLINK" -o "$IFACE" -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
