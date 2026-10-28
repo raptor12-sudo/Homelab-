@@ -1,0 +1,8 @@
+#!/bin/sh
+# Autorise les LAN homelab (eth0 en câble, wlan0 en point d'accès) à sortir par la clé Wi-Fi USB (wlan1) malgré la politique DROP de Docker.
+# À copier dans /etc/NetworkManager/dispatcher.d/ (mode 755).
+UPLINK=wlan1
+case "$1" in eth0|wlan0) ;; *) exit 0 ;; esac
+[ "$2" = up ] || exit 0
+iptables -C DOCKER-USER -i "$1" -o $UPLINK -j ACCEPT 2>/dev/null || iptables -I DOCKER-USER -i "$1" -o $UPLINK -j ACCEPT
+iptables -C DOCKER-USER -i $UPLINK -o "$1" -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT 2>/dev/null || iptables -I DOCKER-USER -i $UPLINK -o "$1" -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
