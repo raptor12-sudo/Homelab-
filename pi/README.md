@@ -112,7 +112,7 @@ docker compose up -d
 ```
 
 - Ports publiés sur **une seule adresse**, pas sur toutes les interfaces : le Pi a une IPv6 publique, et un DNS ouvert sur Internet serait exploité pour des attaques par amplification.
-- Adresse réglable par `ADGUARD_IP`, `192.168.1.81` par défaut (la maison).
+- Adresse d'écoute réglable par `ADGUARD_IP` (défaut sûr `127.0.0.1`) ; pour servir le LAN, la fixer à l'adresse du Pi sur ce LAN, dans un fichier `.env` non versionné.
 - Version **figée** : une mise à jour se fait volontairement, en changeant la version dans `compose.yaml`.
 - DNS amont : Quad9 en DNS-over-HTTPS, avec DNSSEC.
 
@@ -124,19 +124,20 @@ docker compose up -d
 | [`lan/adguard.conf`](lan/adguard.conf) | `/etc/NetworkManager/dnsmasq-shared.d/` | DNS des LAN vers AdGuard |
 | [`lan/90-homelab-forward`](lan/90-homelab-forward) | `/etc/NetworkManager/dispatcher.d/` (mode 755) | Routage des LAN vers la sortie, malgré Docker |
 | [`wifi/README.md`](wifi/README.md) | — | Pilote de la clé USB : diagnostic, DKMS, bascule à distance |
+| [`portainer/compose.yaml`](portainer/README.md) | `~/portainer/compose.yaml` | Gestion Docker par interface web (Portainer) |
 
 ## Hors de la maison
 
-AdGuard et le DNS des LAN visent `192.168.1.81`, l'adresse du Pi à la maison. Ailleurs, elle n'existe pas : le conteneur refuse de démarrer (`cannot assign requested address`) et le DNS des LAN ne répond plus.
+AdGuard s'attache à l'adresse `ADGUARD_IP`. Pour que les clients du LAN l'utilisent, il faut qu'il écoute sur l'adresse du Pi sur ce LAN ; cette adresse n'existe que là où le Pi est branché. Ailleurs, si elle n'existe pas, le conteneur refuse de démarrer (`cannot assign requested address`). On adapte donc selon le lieu :
 
-| Lieu | AdGuard | `lan/adguard.conf` |
+| Situation | AdGuard | `lan/adguard.conf` |
 |---|---|---|
-| Maison | `docker compose up -d` | `server=192.168.1.81` |
-| Ailleurs | `ADGUARD_IP=127.0.0.1 docker compose up -d` | `server=127.0.0.1` |
+| Sur le LAN à servir | `ADGUARD_IP=<ip-du-pi-sur-le-lan> docker compose up -d` | `server=<ip-du-pi-sur-le-lan>` |
+| Local seulement | `docker compose up -d` (défaut `127.0.0.1`) | `server=127.0.0.1` |
 
 Après un changement de `adguard.conf` : `sudo nmcli connection up homelab-lan`, puis `sudo nmcli connection up homelab-ap`.
 
-Hors de la maison, l'interface web n'est joignable que depuis le Pi lui-même. On y accède par un tunnel SSH : `ssh -N -L 8080:127.0.0.1:8080 <utilisateur>@10.0.10.1`, puis `http://localhost:8080`.
+En mode local seulement, l'interface web n'est joignable que depuis le Pi. On y accède par un tunnel SSH : `ssh -N -L 8080:127.0.0.1:8080 <utilisateur>@<ip-du-pi>`, puis `http://localhost:8080`.
 
 ## Vérification
 
@@ -165,7 +166,7 @@ sudo iw dev <if-ap> station dump         # clients du Wi-Fi homelab
 
 ## Points ouverts
 
-- La clé n'a pas la même adresse MAC que le Wi-Fi intégré : la box lui donnera sans doute une autre adresse que `192.168.1.81`. Prévoir une réservation DHCP sur la box.
+- La clé n'a pas la même adresse MAC que le Wi-Fi intégré : la box lui donnera sans doute une adresse différente de l'ancienne. Prévoir une réservation DHCP sur la box pour la stabiliser.
 - Sans switch, un seul appareil peut être branché sur le LAN câble.
 - Point d'accès plafonné à 20 MHz par NetworkManager ; le 40/80 MHz demandera `hostapd` (voir [`wifi/`](wifi/README.md)).
 - Domaine réglementaire à régler sur le bon pays.

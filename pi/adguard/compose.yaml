@@ -1,6 +1,8 @@
 # AdGuard Home : DNS filtrant du homelab, déployé dans ~/adguard sur le Pi.
-# Ports publiés uniquement sur l'IP locale du Pi : le Pi a une IPv6 publique, AdGuard ne doit pas être joignable depuis Internet.
-# ADGUARD_IP change cette adresse hors de la maison, par exemple : ADGUARD_IP=127.0.0.1 docker compose up -d
+# Ports publiés sur une seule adresse (jamais 0.0.0.0) : le Pi a une IPv6 publique, AdGuard ne doit pas être joignable depuis Internet.
+# ADGUARD_IP définit cette adresse. Défaut sûr : 127.0.0.1 (accès local seulement).
+# Pour servir le LAN, la fixer à l'adresse du Pi sur ce LAN, par ex. dans un fichier .env (non versionné) :
+#   ADGUARD_IP=<ip-du-pi-sur-le-lan>   puis   docker compose up -d
 services:
   adguardhome:
     image: adguard/adguardhome:v0.107.79  # version figée : changer volontairement, après lecture des notes de version
@@ -10,6 +12,11 @@ services:
       - ./work:/opt/adguardhome/work
       - ./conf:/opt/adguardhome/conf
     ports:
-      - "${ADGUARD_IP:-192.168.1.81}:53:53/udp"
-      - "${ADGUARD_IP:-192.168.1.81}:53:53/tcp"
-      - "${ADGUARD_IP:-192.168.1.81}:8080:80/tcp"    # interface web après installation
+      - "${ADGUARD_IP:-127.0.0.1}:53:53/udp"       # DNS clair (clients du LAN)
+      - "${ADGUARD_IP:-127.0.0.1}:53:53/tcp"
+      - "${ADGUARD_IP:-127.0.0.1}:8080:80/tcp"     # interface web après installation
+      # - "${ADGUARD_IP:-127.0.0.1}:3000:3000/tcp" # assistant de PREMIÈRE installation (décommenter au 1er lancement, recommenter après)
+      # --- DNS chiffré servi aux clients (nécessite un certificat TLS configuré dans AdGuard) ---
+      # - "${ADGUARD_IP:-127.0.0.1}:853:853/tcp"   # DNS-over-TLS
+      # - "${ADGUARD_IP:-127.0.0.1}:853:853/udp"   # DNS-over-QUIC
+      # - "${ADGUARD_IP:-127.0.0.1}:443:443/tcp"   # DNS-over-HTTPS (serveur)

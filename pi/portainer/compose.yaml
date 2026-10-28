@@ -1,0 +1,17 @@
+# Portainer CE : interface de gestion Docker du homelab, déployée dans ~/portainer sur le Pi.
+# Port publié sur une seule adresse, jamais 0.0.0.0. Défaut sûr : 127.0.0.1 (accès par tunnel SSH).
+# Pour un accès direct via le VPN, fixer PORTAINER_IP à l'adresse VPN du Pi dans un fichier .env non versionné :
+#   PORTAINER_IP=<ip-vpn-du-pi>   puis   docker compose up -d
+services:
+  portainer:
+    image: portainer/portainer-ce:2.21.4   # version figée : changer volontairement, après lecture des notes de version
+    container_name: portainer
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock   # accès à Docker = contrôle quasi-root : voir la section Sécurité
+      - portainer_data:/data
+    ports:
+      - "${PORTAINER_IP:-127.0.0.1}:9443:9443"   # interface web HTTPS (certificat auto-signé)
+
+volumes:
+  portainer_data:
