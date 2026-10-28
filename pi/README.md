@@ -1,6 +1,6 @@
 # Raspberry Pi : routeur du homelab
 
-Le Raspberry Pi transforme une simple connexion Wi-Fi (box ou bureau) en un **réseau local isolé** pour le homelab. Il capte le Wi-Fi amont par une clé USB — c'est son **WAN** —, applique le **NAT**, et crée un **sous-réseau** câblé et Wi-Fi avec DHCP, DNS filtrant et pare-feu. Il tient ce rôle en attendant OPNsense sur le serveur, et reste indépendant : sa panne n'empêche pas le serveur de fonctionner, et inversement.
+Le Raspberry Pi transforme une simple connexion Wi-Fi (box ou bureau) en un **réseau local isolé** pour le homelab. Il capte le Wi-Fi amont par une clé USB c'est son **WAN**, applique le **NAT**, et crée un **sous-réseau** câblé et Wi-Fi avec DHCP, DNS filtrant et pare-feu. Il tient ce rôle en attendant OPNsense sur le serveur, et reste indépendant : sa panne n'empêche pas le serveur de fonctionner, et inversement.
 
 **Statut** : en place et vérifié le 2026-10-28.
 
