@@ -1,0 +1,33 @@
+{
+	admin off
+}
+
+# Chaque service est publié en HTTPS avec un certificat d'une CA interne à Caddy
+# (`tls internal`), à installer une fois par appareil. Caddy n'écoute que sur l'adresse
+# VPN ({$CADDY_BIND}), jamais sur Internet. Les valeurs {$...} viennent du fichier .env.
+
+adguard.homelab {
+	bind {$CADDY_BIND}
+	tls internal
+	reverse_proxy {$CADDY_BIND}:8080
+}
+
+portainer.homelab {
+	bind {$CADDY_BIND}
+	tls internal
+	reverse_proxy https://{$CADDY_BIND}:9443 {
+		transport http {
+			tls_insecure_skip_verify
+		}
+	}
+}
+
+proxmox.homelab {
+	bind {$CADDY_BIND}
+	tls internal
+	reverse_proxy https://{$PROXMOX_UPSTREAM} {
+		transport http {
+			tls_insecure_skip_verify
+		}
+	}
+}

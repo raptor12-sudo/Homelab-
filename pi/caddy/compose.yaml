@@ -1,0 +1,17 @@
+# Caddy : reverse proxy du homelab (noms *.homelab en HTTPS via une CA interne), déployé dans ~/caddy sur le Pi.
+# Les adresses réelles (adresse d'écoute VPN, upstreams) vivent dans un fichier .env NON versionné (voir README).
+services:
+  caddy:
+    image: caddy:2.8.4   # version figée : changer volontairement, après lecture des notes de version
+    container_name: caddy
+    restart: unless-stopped
+    network_mode: host    # pour écouter directement sur l'adresse VPN et joindre les services locaux
+    env_file: .env
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data      # contient la CA interne (clé privée) : à sauvegarder, jamais à versionner
+      - caddy_config:/config
+
+volumes:
+  caddy_data:
+  caddy_config:
