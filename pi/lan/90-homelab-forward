@@ -5,6 +5,7 @@
 # Indépendant des noms d'interface : l'uplink est l'interface qui porte la route par défaut,
 # et on agit pour eth0 (LAN câble) et pour toute interface en mode point d'accès (AP).
 # Les noms peuvent permuter selon le pilote Wi-Fi : on ne les code donc jamais en dur.
+PATH=/usr/sbin:/usr/bin:/sbin:/bin
 IFACE="$1"
 [ "$2" = up ] || exit 0
 
