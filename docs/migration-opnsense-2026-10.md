@@ -106,19 +106,28 @@ Sur **Interfaces → WAN**, l'option **Block private networks** bloque tout le t
 
 OPNsense applique la première règle qui correspond. Pour chaque segment :
 
-**`srv` (LAN)** :
-1. **Pass**, source `LAN net`, destination `LAN address` : pour que la passerelle réponde.
-2. **Block**, source `LAN net`, destination `10.0.0.0/8`, avec journalisation.
-3. **Pass**, source `LAN net`, destination `any`.
+**Règles de `srv` (LAN)**
 
-**`iot` (OPT1)** :
-1. **Pass**, TCP et UDP, source `OPT1 net`, destination `10.0.40.1`, port 53 (DNS).
-2. **Pass**, TCP, source `OPT1 net`, destination `any`, port 443 (HTTPS).
-3. **Block**, source `OPT1 net`, destination `10.0.0.0/8`.
+| Ordre | Action | Source | Destination | Protocole | Journal | Rôle |
+|---|---|---|---|---|---|---|
+| 1 | Pass | `LAN net` | `LAN address` | any | non | La passerelle répond |
+| 2 | Block | `LAN net` | `10.0.0.0/8` | any | oui | Pas de passage entre segments |
+| 3 | Pass | `LAN net` | any | any | non | Sortie vers Internet |
 
-**`guest` (OPT2)** :
-1. **Block**, source `OPT2 net`, destination `10.0.0.0/8`.
-2. **Pass**, source `OPT2 net`, destination `any`.
+**Règles de `iot` (OPT1)**
+
+| Ordre | Action | Source | Destination | Protocole | Port | Rôle |
+|---|---|---|---|---|---|---|
+| 1 | Pass | `OPT1 net` | `10.0.40.1` | TCP/UDP | 53 (DNS) | Résolution de noms |
+| 2 | Pass | `OPT1 net` | any | TCP | 443 (HTTPS) | Sortie web |
+| 3 | Block | `OPT1 net` | `10.0.0.0/8` | any | any | Pas de passage entre segments |
+
+**Règles de `guest` (OPT2)**
+
+| Ordre | Action | Source | Destination | Protocole | Journal | Rôle |
+|---|---|---|---|---|---|---|
+| 1 | Block | `OPT2 net` | `10.0.0.0/8` | any | oui | Pas de passage entre segments |
+| 2 | Pass | `OPT2 net` | any | any | non | Sortie vers Internet |
 
 > **Un piège fréquent.** Si vous choisissez **TCP** comme protocole, le ping ne passe pas. Mettez **any** pour les tests, et réservez les protocoles précis aux règles qui en ont besoin.
 
