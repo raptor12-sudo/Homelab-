@@ -1,66 +1,75 @@
 # Migrer le routage du homelab vers OPNsense
 
-**Ce guide retrace la migration du routage d'un homelab vers OPNsense, exécutée en VM sur Proxmox, avec des segments isolés par SDN. Il raconte aussi les erreurs commises, parce qu'elles montrent mieux que n'importe quelle théorie pourquoi l'ordre des opérations compte.**
+Ce guide retrace la migration du routage d'un homelab vers OPNsense, exécutée en VM sur Proxmox, avec des segments isolés par SDN. Il raconte aussi les erreurs commises, parce qu'elles montrent mieux que n'importe quelle théorie pourquoi l'ordre des opérations compte.
 
-## Ce que vous allez mettre en place
+## Étape 1 : Préparer Proxmox
 
-- Un routeur et pare-feu **OPNsense 26.7** en VM sur un seul nœud Proxmox VE 9.
-- Trois segments isolés, `srv`, `iot` et `guest`, créés par le SDN de Proxmox.
-- Un DHCP par segment, avec **Kea DHCP**.
-- Un Raspberry Pi qui reste passerelle du réseau principal et garde ses services web.
+Une installation fraîche de Proxmox VE 9.2.2 (noyau 7.0.2) donne une carte réseau `nic0`. Commencez par les dépôts : les dépôts entreprise renvoient une erreur 401 sans abonnement, donc on les désactive et on active `pve-no-subscription`.
 
-## Le changement de plan
+### Désactiver les dépôts entreprise et activer le dépôt gratuit
 
-Le plan initial voulait déplacer la passerelle d'administration sur OPNsense (`10.0.10.1`) et placer le Pi sur un petit réseau de transit (`10.255.0.0/24`).
+Fenêtre de terminal
+```bash
+mkdir -p /root/apt-disabled
+mv /etc/apt/sources.list.d/pve-enterprise.sources /root/apt-disabled/ 2>/dev/null
+mv /etc/apt/sources.list.d/ceph.sources /root/apt-disabled/ 2>/dev/null
+apt update
+```
 
-**Ce plan a été abandonné.** Il exigeait de changer l'adresse du nœud et celle du Pi dans le bon ordre, sans aucun filet de sécurité. Un seul oubli, et l'accès au nœud tombait.
+**Test** : `apt update` se termine sans erreur 401.
 
-Le plan retenu est plus simple :
+> **Reportez les mises à jour si la connexion est lente.** La mise à jour vers 9.2.24 (noyau 7.0.14) n'est pas bloquante pour la suite. On l'a reportée, et on peut la faire plus tard.
 
-- le Pi reste sur `10.0.10.1` et continue de router le réseau principal ;
-- le nœud reste sur `10.0.10.148`, sans changement d'adresse ;
-- OPNsense se branche sur ce même réseau par son WAN, en DHCP (`10.0.10.204`), et route les trois segments.
-
-> **Gardez toujours un accès de secours.** Avant de toucher à une adresse, vérifiez que vous avez la console physique ou un accès Tailscale vers une machine qui ne dépend pas du changement.
-
-## Étape 1 : réinstaller et préparer Proxmox
-
-Une installation fraîche de Proxmox VE 9.2.2 (noyau 7.0.2) donne une carte `nic0`. Désactivez les dépôts entreprise, qui renvoient une erreur 401 sans abonnement, puis activez `pve-no-subscription`.
-
-**Test** : `apt update` se termine sans erreur.
-
-La mise à jour vers 9.2.24 (noyau 7.0.14) a été reportée à cause d'une connexion lente. Ce n'est pas bloquant pour la suite.
-
-## Étape 2 : créer les segments dans le SDN
+## Étape 2 : Créer les segments dans le SDN
 
 Créez la zone `homelab` de type Simple, puis les VNet `srv`, `iot` et `guest`.
 
-Il y a un piège ici : si vous donnez une passerelle au sous-réseau, Proxmox la place **sur le bridge de l'hôte**. Au moment où OPNsense prendra la même adresse sur sa carte, vous aurez un conflit d'IP. Créez donc les sous-réseaux **sans passerelle** :
+### Créer les sous-réseaux sans passerelle
 
+Il y a un piège ici. Si vous donnez une passerelle au sous-réseau, Proxmox la place **sur le bridge de l'hôte**. Quand OPNsense prendra la même adresse sur sa carte, vous aurez un conflit d'IP.
+
+Fenêtre de terminal
 ```bash
 pvesh create /cluster/sdn/vnets/srv/subnets --subnet 10.0.30.0/24 --type subnet
+pvesh create /cluster/sdn/vnets/iot/subnets --subnet 10.0.40.0/24 --type subnet
+pvesh create /cluster/sdn/vnets/guest/subnets --subnet 10.0.50.0/24 --type subnet
 pvesh set /cluster/sdn
 ip -br a
 ```
 
 **Test** : `srv`, `iot` et `guest` sont `UP` **sans** adresse IP, et `vmbr0` garde `10.0.10.148/24`.
 
-## Étape 3 : créer la VM OPNsense
+## Étape 3 : Installer OPNsense en VM
 
-Créez la VM 100 avec une carte par bridge, dans cet ordre précis, parce que OPNsense nomme les cartes selon cet ordre :
+### Vérifier l'empreinte avant d'utiliser l'ISO
 
-- `net0` sur `vmbr0` → `em0` (WAN)
-- `net1` sur `srv` → `em1` (LAN)
-- `net2` sur `iot` → `em2` (OPT1)
-- `net3` sur `guest` → `em3` (OPT2)
+Les images sont distribuées compressées en bzip2. Le fichier de sommes publié sur le miroir porte sur l'archive `.bz2` : c'est elle qu'il faut contrôler. Comparez l'empreinte à celle du fichier de sommes, puis seulement après décompressez.
 
-Vérifiez l'empreinte de l'ISO avant de l'installer. Le fichier de sommes publié ne contient que l'empreinte de l'archive `.bz2` : c'est elle qu'il faut comparer.
+Fenêtre de terminal
+```bash
+sha256sum OPNsense-26.7-dvd-amd64.iso.bz2
+bzip2 -tv OPNsense-26.7-dvd-amd64.iso.bz2
+bunzip2 -k OPNsense-26.7-dvd-amd64.iso.bz2
+```
+
+Pour nous, l'empreinte de l'archive est `95cafedd…186bfb`. Une autre valeur signifie un téléchargement corrompu : recommencez, sans décompresser.
+
+### Créer la VM avec les cartes dans le bon ordre
+
+OPNsense nomme les cartes selon leur ordre dans la VM. Respectez donc cet ordre :
+
+| Carte VM | Bridge | Nom dans OPNsense | Rôle |
+|---|---|---|---|
+| `net0` | `vmbr0` | `em0` | WAN |
+| `net1` | `srv` | `em1` | LAN (`srv`) |
+| `net2` | `iot` | `em2` | OPT1 (`iot`) |
+| `net3` | `guest` | `em3` | OPT2 (`guest`) |
 
 **Test** : `qm config 100` affiche les quatre cartes `e1000` et le disque prévu.
 
-## Étape 4 : configurer les interfaces
+## Étape 4 : Configurer les interfaces
 
-Dans la console d'OPNsense :
+Dans la console d'OPNsense, assignez les interfaces puis fixez les adresses. Pour chaque interface LAN, la passerelle reste vide : ce sont les segments qui passent par OPNsense, pas l'inverse.
 
 | Interface | Rôle | Adresse |
 |---|---|---|
@@ -69,14 +78,13 @@ Dans la console d'OPNsense :
 | `em2` | OPT1 (`iot`) | `10.0.40.1/24` |
 | `em3` | OPT2 (`guest`) | `10.0.50.1/24` |
 
-Pour chaque interface LAN, la passerelle reste vide. Ce sont les segments qui passent par OPNsense, pas OPNsense qui a une passerelle.
+**Test** : `ifconfig em0 | grep "inet "` affiche `10.0.10.204`, et `ping -c2 10.0.10.1` répond depuis OPNsense.
 
-**Test** : `ifconfig em0` affiche `10.0.10.204`, et `ping 10.0.10.1` depuis OPNsense répond.
+## Étape 5 : Ouvrir la route vers les segments depuis le Pi
 
-## Étape 5 : ouvrir la route vers les segments depuis le Pi
+Le Pi reste la passerelle du réseau principal (`10.0.10.1`). Il doit savoir qu'il faut passer par OPNsense pour atteindre les segments :
 
-Le Pi doit savoir qu'il faut passer par OPNsense pour atteindre les segments :
-
+Fenêtre de terminal
 ```bash
 sudo ip route replace 10.0.30.0/24 via 10.0.10.204
 sudo ip route replace 10.0.40.0/24 via 10.0.10.204
@@ -86,21 +94,22 @@ ip route | grep "10.0."
 
 > **Une route annoncée n'est pas une route active.** Ces commandes sont temporaires : elles disparaissent au redémarrage. La version permanente passera par `nmcli`, à faire plus tard.
 
-## Étape 6 : autoriser le trafic dans le pare-feu
+## Étape 6 : Autoriser le trafic dans le pare-feu
 
-Deux réglages bloquent le trafic par défaut, et il faut les connaître.
+Deux réglages bloquent le trafic par défaut. Il faut les connaître avant de créer la moindre règle.
 
-### Le WAN bloque les adresses privées
+### Décocher « Block private networks » sur le WAN
 
-Sur **Interfaces → WAN**, l'option **Block private networks** bloque tout le trafic venant d'une adresse privée, avant même que vos règles soient lues. Or le Pi est en `10.0.10.1`. **Décochez cette option**, sinon le Pi ne pourra jamais joindre OPNsense.
+Sur **Interfaces → WAN**, l'option **Block private networks** bloque tout le trafic venant d'une adresse privée, avant même que vos règles soient lues. Or le Pi est en `10.0.10.1`. Décochez cette option, sinon le Pi ne pourra jamais joindre OPNsense.
 
-### Les règles se lisent de haut en bas
+### Créer les règles dans le bon ordre
 
-OPNsense applique la première règle qui correspond. Pour chaque segment, l'ordre est le suivant :
+OPNsense applique la première règle qui correspond. Pour chaque segment :
 
 **`srv` (LAN)** :
-1. **Block**, source `LAN net`, destination `10.0.0.0/8`, avec journalisation.
-2. **Pass**, source `LAN net`, destination `any`.
+1. **Pass**, source `LAN net`, destination `LAN address` : pour que la passerelle réponde.
+2. **Block**, source `LAN net`, destination `10.0.0.0/8`, avec journalisation.
+3. **Pass**, source `LAN net`, destination `any`.
 
 **`iot` (OPT1)** :
 1. **Pass**, TCP et UDP, source `OPT1 net`, destination `10.0.40.1`, port 53 (DNS).
@@ -111,16 +120,21 @@ OPNsense applique la première règle qui correspond. Pour chaque segment, l'ord
 1. **Block**, source `OPT2 net`, destination `10.0.0.0/8`.
 2. **Pass**, source `OPT2 net`, destination `any`.
 
-Pour l'interface `srv`, il manque encore une règle, et elle est importante : la règle 1 bloque aussi la passerelle `10.0.30.1`, qui fait partie de `10.0.0.0/8`. Ajoutez en tête une règle **Pass** : source `LAN net`, destination `LAN address`.
-
 > **Un piège fréquent.** Si vous choisissez **TCP** comme protocole, le ping ne passe pas. Mettez **any** pour les tests, et réservez les protocoles précis aux règles qui en ont besoin.
 
-## Étape 7 : configurer le DHCP avec Kea
+> **Un second piège.** Une règle **Block** sur `10.0.0.0/8` bloque aussi la passerelle `10.0.30.1`. C'est pour ça que la règle **Pass** vers `LAN address` doit être au-dessus.
 
-Kea a remplacé ISC DHCP dans OPNsense 26.7.
+## Étape 7 : Configurer le DHCP avec Kea
 
-1. **Services → Kea DHCP → Settings** : activez le service et cochez les trois interfaces `LAN`, `OPT1` et `OPT2`. Cochez aussi les règles de pare-feu automatiques pour le DHCP.
-2. **Services → Kea DHCP → Subnets** : créez un sous-réseau par segment.
+Kea a remplacé ISC DHCP dans OPNsense 26.7. La configuration se fait en deux temps.
+
+### Activer Kea sur les trois interfaces
+
+**Services → Kea DHCP → Settings** : cochez **Enable**, sélectionnez `LAN`, `OPT1` et `OPT2`, puis cochez **Firewall rules** pour ouvrir automatiquement le DHCP sur ces interfaces.
+
+### Créer un sous-réseau par segment
+
+**Services → Kea DHCP → Subnets**, avec les valeurs suivantes :
 
 | Sous-réseau | Plage | Passerelle |
 |---|---|---|
@@ -130,30 +144,41 @@ Kea a remplacé ISC DHCP dans OPNsense 26.7.
 
 Gardez **Auto collect option data** coché : Kea remplit alors la passerelle à partir de l'interface. Laissez les champs DNS dynamique vides.
 
-Une erreur de saisie fréquente : le sous-réseau doit être `10.0.50.0/24`, et non `10.0.50.1/24`. OPNsense l'accepte sans broncher, mais le DHCP ne fonctionne pas correctement.
+> **Une erreur de saisie fréquente.** Le sous-réseau doit être `10.0.50.0/24`, et non `10.0.50.1/24`. OPNsense accepte les deux, mais le DHCP ne fonctionne pas correctement avec la seconde.
 
 **Test** : une machine branchée sur `srv` reçoit une adresse `10.0.30.1xx` avec la passerelle `10.0.30.1`.
 
-## Étape 8 : tester avec une VM
+## Étape 8 : Tester avec une VM
 
-Pour tester, nous avons utilisé une VM Alpine Linux 3.24.3 (67 Mo) branchée sur `srv`.
+### Préparer une VM de test sur `srv`
 
-Dans la VM, l'interface est désactivée au démarrage. Activez-la d'abord, puis demandez une adresse :
+Nous avons utilisé une VM Alpine Linux 3.24.3 (67 Mo), branchée sur `srv`. Dans cette VM, l'interface est désactivée au démarrage. Activez-la d'abord, puis demandez une adresse :
 
+Fenêtre de terminal
 ```bash
 ip link set eth0 up
 udhcpc -i eth0 -n
 ip a
 ```
 
-BusyBox n'accepte pas `ip -br a`, d'où l'option `ip a`.
+BusyBox n'accepte pas `ip -br a`, d'où l'usage de `ip a`.
 
-Résultats observés :
+### Lire les résultats
 
-- le DHCP attribue `10.0.30.101`, **validé** ;
-- le nœud (`10.0.10.148`) et le segment `iot` (`10.0.40.1`) ne répondent pas depuis `srv`, **validé** : l'isolation fonctionne ;
-- le ping vers la passerelle `10.0.30.1` échoue, à cause de la règle **Block** de l'étape 6 ;
-- la sortie vers `1.1.1.1` reste à revalider après correction de la passerelle.
+- **DHCP** : la VM reçoit `10.0.30.101`. Validé.
+- **Isolation** : le nœud (`10.0.10.148`) et le segment `iot` (`10.0.40.1`) ne répondent pas depuis `srv`. Validé.
+- **Passerelle** : le ping vers `10.0.30.1` échouait avant l'ajout de la règle **Pass** vers `LAN address`. À revalider.
+- **Internet** : la sortie vers `1.1.1.1` reste à valider après correction de la passerelle.
+
+## Ce que cette base permet
+
+Une fois ces huit étapes validées, vous avez un routeur qui distribue des adresses, isole les segments et laisse sortir l'Internet. Chaque segment se teste indépendamment des autres.
+
+Un homelab sans sauvegarde n'est pas plus sûr qu'un homelab sans pare-feu : gardez les archives de configuration de px1 et du Pi à portée de main.
+
+## Pourquoi commencer par les segments et non par l'administration
+
+Le plan initial voulait déplacer l'administration sur OPNsense. Il exigeait de changer l'adresse du nœud et celle du Pi dans le bon ordre, sans filet de sécurité. Une seule étape mal ordonnée, et l'accès au nœud tombait. Le plan retenu laisse le nœud à `10.0.10.148` et ajoute OPNsense à côté : on peut ensuite basculer l'administration quand on la maîtrise.
 
 ## Ce qu'il faut retenir
 
@@ -161,14 +186,16 @@ Résultats observés :
 - **Gardez un accès de secours** : console physique, ou Tailscale vers une machine indépendante.
 - **Une adresse de passerelle sur un bridge hôte** peut créer un conflit dès qu'un autre équipement la reprend.
 - **Le WAN bloque les adresses privées** si l'option est cochée, même avec une règle qui autorise.
-- **Une règle `Block` générale** peut bloquer la passerelle elle-même : pensez à une règle `Pass` vers `LAN address`, placée au-dessus.
+- **Une règle `Block` générale** peut bloquer la passerelle elle-même : placez une règle `Pass` vers `LAN address` au-dessus.
 
 ## Prochaines étapes
 
-- Ajouter la règle `Pass` vers `LAN address` sur `srv`, puis retester la passerelle et `1.1.1.1`.
+- Valider la passerelle et la sortie Internet depuis la VM de test.
 - Rendre les routes du Pi permanentes avec `nmcli`.
 - Fixer l'adresse du WAN par une réservation DHCP.
 - Configurer Unbound DNS sur les trois segments.
 - Approuver les routes et définir les ACL dans Tailscale.
 - Supprimer la VM de test une fois les tests terminés.
 - Mettre à jour Proxmox vers 9.2.24.
+
+Pour les procédures d'exploitation au quotidien, voir le handbook : `docs/handbook.md`.
