@@ -189,6 +189,62 @@ Un homelab sans sauvegarde n'est pas plus sûr qu'un homelab sans pare-feu : gar
 
 Le plan initial voulait déplacer l'administration sur OPNsense. Il exigeait de changer l'adresse du nœud et celle du Pi dans le bon ordre, sans filet de sécurité. Une seule étape mal ordonnée, et l'accès au nœud tombait. Le plan retenu laisse le nœud à `10.0.10.148` et ajoute OPNsense à côté : on peut ensuite basculer l'administration quand on la maîtrise.
 
+## Les choix et leurs raisons
+
+Chaque choix de ce guide répond à une contrainte précise. Le tableau donne la raison de la solution retenue et l'alternative qu'on a écartée.
+
+### Architecture
+
+| Choix | Raison | Alternative écartée |
+|---|---|---|
+| Garder le nœud sur le réseau principal (`10.0.10.148`) | Aucun changement d'adresse sur le nœud, donc aucun risque de couper l'accès | Déplacer l'administration sur OPNsense, qui exigeait une bascule risquée |
+| Garder le Pi comme passerelle (`10.0.10.1`) | Le Pi fait déjà le travail et porte les services web | Le remplacer par OPNsense tout de suite, avec les coupures que cela implique |
+| Ne pas créer le VNet `mgmt` pour l'instant | Il n'a de sens que pour une administration séparée, qui n'est pas encore en place | Créer `mgmt` maintenant, sans rien y connecter |
+| Brancher OPNsense sur le réseau principal par son WAN | Le WAN reçoit une adresse du Pi, sans changer le câblage | Un petit réseau de transit (`10.255.0.0/24`) : il imposait de changer l'adresse du Pi |
+| Segmenter par bridges SDN, sans VLAN | Il n'y a pas de switch managé, donc pas de VLAN possibles au niveau matériel | Des VLAN sur un switch managé, que le matériel ne permet pas |
+
+### SDN et Proxmox
+
+| Choix | Raison | Alternative écartée |
+|---|---|---|
+| Zone de type **Simple** | Suffit pour des bridges isolés, sans VLAN ni tunnel | Zone VLAN ou VXLAN, inutiles sans switch ni deuxième nœud |
+| Sous-réseaux **sans passerelle** | Proxmox placerait sinon la passerelle sur le bridge de l'hôte, en conflit avec OPNsense | Une passerelle côté Proxmox, qui crée un doublon d'adresse |
+| Mise à jour de Proxmox **reportée** | La connexion est lente, et la mise à jour n'est pas bloquante | La faire tout de suite, au risque d'un téléchargement interrompu |
+
+### OPNsense
+
+| Choix | Raison | Alternative écartée |
+|---|---|---|
+| Cartes **e1000** | Le nom des cartes (`em0`, `em1`…) est stable et simple à lire | **VirtIO**, plus rapide, mais avec des noms `vtnet` ; à envisager plus tard |
+| Ordre des cartes fixé | OPNsense nomme les cartes selon leur ordre, donc on fixe l'ordre pour ne pas se tromper | Changer l'ordre à chaque modification |
+| Système installé en **UFS** | Simple et léger pour un disque de 20 Go | **ZFS**, qui demande plus de mémoire et de configuration |
+| WAN en **DHCP** | Le Pi distribue l'adresse, sans configuration manuelle des deux côtés | Une adresse statique, à réserver seulement si besoin |
+| Décocher **Block private networks** sur le WAN | Le réseau du Pi est privé, donc cette option bloquerait tout | Garder l'option et ouvrir des exceptions une par une |
+| Passer par **Kea DHCP** | ISC DHCP a disparu d'OPNsense 26.7 | Une ancienne configuration ISC, qui n'existe plus |
+| Plage DHCP `.100` à `.200` | Les adresses `.1` à `.99` restent libres pour les équipements fixes | Une plage qui couvre tout le sous-réseau, avec risque de conflit |
+| **Auto collect option data** activé | Kea prend la passerelle depuis l'interface, sans saisie supplémentaire | Saisir la passerelle à la main, avec risque d'erreur |
+
+### Pare-feu
+
+| Choix | Raison | Alternative écartée |
+|---|---|---|
+| Bloquer `10.0.0.0/8` avant de laisser sortir vers `any` | Chaque segment ne sort que vers Internet et ne voit pas les autres segments | Laisser passer tout le trafic et bloquer au cas par cas |
+| Autoriser la passerelle (`LAN address`) au-dessus du blocage | Sans cela, le blocage empêche les machines de joindre leur propre passerelle | Une passerelle inaccessible, qui casse le DNS et le DHCP |
+| Limiter `iot` au DNS vers OPNsense et au HTTPS | Les objets connectés ont une surface d'attaque réduite, et on ne leur ouvre que le nécessaire | Une sortie complète, que les objets connectés n'ont pas besoin d'avoir |
+| Action **Block** plutôt que **Reject** | Le blocage est silencieux, donc un scan ne voit rien | **Reject**, qui répond à l'émetteur et renseigne un attaquant |
+| Protocole **any** pour les tests | Le ping (ICMP) passe, ce qui simplifie le diagnostic | TCP seul, qui bloque les tests de connectivité |
+| Journalisation sur les blocages | On voit ce qui est bloqué, pour corriger une règle sans deviner | Pas de journal, qui laisse les erreurs invisibles |
+
+### Test et exploitation
+
+| Choix | Raison | Alternative écartée |
+|---|---|---|
+| Vérifier le **SHA-256 de l'archive** `.bz2` | Le fichier de sommes publié porte sur l'archive, pas sur l'image décompressée | Décompresser sans vérifier, au risque d'une image corrompue |
+| Route du Pi **temporaire** d'abord | On valide la route avant de la figer dans la configuration | La rendre permanente tout de suite, et devoir la défaire si elle est fausse |
+| Alpine Linux pour le test | Une image de 67 Mo qui démarre en direct, sans installation | Installer une VM complète, plus lourde à télécharger et à supprimer |
+| Tailscale pour l'accès distant | Déjà actif sur le Pi, avec des ACL par identité et aucun port ouvert | WireGuard, supprimé pour éviter deux accès concurrents |
+| Pas d'exposition publique pour l'instant | Proxmox, OPNsense, Portainer et AdGuard ne doivent jamais être visibles depuis Internet | Ouvrir un port et découvrir le risque après coup |
+
 ## Ce qu'il faut retenir
 
 - **Changez une chose à la fois**, et vérifiez-la avant de passer à la suivante.
