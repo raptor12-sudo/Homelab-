@@ -146,4 +146,4 @@ ifreload -a
 - Supprimer la VM 200 après les tests.
 - Mise à jour de Proxmox vers 9.2.24.
 - Test du mode 4 adresses du RTL8188EUS (`iw list`).
-- Disque 256 Go : reporté.
+
